@@ -1,7 +1,10 @@
 
 package com.divyansu.inventory.security;
 
+import com.divyansu.inventory.entity.User;
+import com.divyansu.inventory.repository.UserRepository;
 import com.divyansu.inventory.service.JwtService;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 
@@ -23,9 +26,13 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -46,19 +53,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtService.extractClaims(token);
-
             String email = claims.getSubject();
-            String role = claims.get("role", String.class);
 
-            if (email != null
-                    && role != null
-                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+            User user = userRepository.findByEmail(email).orElse(null);
+
+            if (user == null || !user.isEnabled()) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write(
+                        "{\"message\":\"Invalid or disabled user\"}"
+                );
+                return;
+            }
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                List.of(new SimpleGrantedAuthority(
+                                        "ROLE_" + user.getRole().name()
+                                ))
                         );
 
                 SecurityContextHolder.getContext()
