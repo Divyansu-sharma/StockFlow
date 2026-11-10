@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.divyansu.inventory.exception.CategoryNotFoundException;
+import com.divyansu.inventory.exception.SellerNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,4 +61,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponse<>(false, exception.getMessage(), null));
     }
+
+    @ExceptionHandler(SellerNotFoundException.class)
+        public ResponseEntity<ApiResponse<Void>> handleSellerNotFound(
+                SellerNotFoundException exception) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(false, exception.getMessage(), null));
+        }
 }
