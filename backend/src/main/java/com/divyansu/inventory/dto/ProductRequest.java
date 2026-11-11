@@ -4,7 +4,10 @@ package com.divyansu.inventory.dto;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
+
 public class ProductRequest {
+
+    private Long categoryId;
 
     @NotBlank(message = "Product name is required")
     @Size(max = 150, message = "Product name cannot exceed 150 characters")
@@ -76,5 +79,13 @@ public class ProductRequest {
 
     public void setReorderLevel(Integer reorderLevel) {
         this.reorderLevel = reorderLevel;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 }

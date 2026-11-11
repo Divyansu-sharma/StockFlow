@@ -15,6 +15,8 @@ public class ProductResponse {
     private Integer reorderLevel;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long categoryId;
+    private String categoryName;    
 
     public ProductResponse(
             Long id,
@@ -25,7 +27,9 @@ public class ProductResponse {
             Integer quantity,
             Integer reorderLevel,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
+            LocalDateTime updatedAt,
+            Long categoryId, 
+            String categoryName) {
 
         this.id = id;
         this.name = name;
@@ -36,6 +40,8 @@ public class ProductResponse {
         this.reorderLevel = reorderLevel;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
 
     public Long getId() { return id; }
@@ -47,4 +53,6 @@ public class ProductResponse {
     public Integer getReorderLevel() { return reorderLevel; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public Long getCategoryId() { return categoryId; }
+    public String getCategoryName() { return categoryName; }
 }
