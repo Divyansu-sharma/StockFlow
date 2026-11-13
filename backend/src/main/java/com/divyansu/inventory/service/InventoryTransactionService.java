@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 public class InventoryTransactionService {
 
@@ -107,6 +109,32 @@ public class InventoryTransactionService {
         return transactionRepository
                 .findByProduct_Id(productId, pageable)
                 .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<InventoryTransactionResponse> filterTransactions(
+            TransactionType type,
+            Long productId,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+
+        if (startDate != null && endDate != null
+                && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException(
+                    "Start date cannot be after end date");
+        }
+
+        if (productId != null && !productRepository.existsById(productId)) {
+            throw new ProductNotFoundException(
+                    "Product not found with id: " + productId);
+        }
+
+        return transactionRepository.findAll(
+                InventoryTransactionSpecification.filterTransactions(
+                        type, productId, startDate, endDate),
+                pageable
+        ).map(this::mapToResponse);
     }
 
     private InventoryTransactionResponse mapToResponse(
