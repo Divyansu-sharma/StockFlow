@@ -13,6 +13,9 @@ import com.divyansu.inventory.repository.DashboardRepository;
 import com.divyansu.inventory.repository.ProductRepository;
 import com.divyansu.inventory.repository.SellerRepository;
 import com.divyansu.inventory.repository.InventoryTransactionRepository;
+import com.divyansu.inventory.dto.ProductMovementResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -190,4 +193,38 @@ public class DashboardService {
                 endDate
         );
     }
+
+    public Page<ProductMovementResponse> getProductMovementReport(
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+
+        if (startDate != null && endDate != null
+                && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException(
+                "Start date cannot be after end date"
+            );
+        }
+
+        if (startDate != null && endDate != null) {
+            return transactionRepository.getProductMovementBetweenDates(
+                startDate, endDate, pageable
+            );
+        }
+
+        if (startDate != null) {
+            return transactionRepository.getProductMovementFromDate(
+                startDate, pageable
+            );
+        }
+
+        if (endDate != null) {
+            return transactionRepository.getProductMovementUntilDate(
+                endDate, pageable
+            );
+        }
+
+        return transactionRepository.getProductMovement(pageable);
+    }
+
 }

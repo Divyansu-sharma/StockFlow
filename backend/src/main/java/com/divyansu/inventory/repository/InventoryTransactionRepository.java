@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.divyansu.inventory.dto.ProductMovementResponse;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -81,4 +83,133 @@ public interface InventoryTransactionRepository
             TransactionType type,
             LocalDateTime startDate,
             LocalDateTime endDate);
+    
+    @Query(
+        value = """
+            SELECT new com.divyansu.inventory.dto.ProductMovementResponse(
+                p.id,
+                p.name,
+                p.sku,
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.IN
+                    THEN t.quantity ELSE 0 END
+                ), 0),
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.OUT
+                    THEN t.quantity ELSE 0 END
+                ), 0)
+            )
+            FROM InventoryTransaction t
+            JOIN t.product p
+            GROUP BY p.id, p.name, p.sku
+            ORDER BY p.name ASC
+            """,
+        countQuery = """
+            SELECT COUNT(DISTINCT t.product.id)
+            FROM InventoryTransaction t
+            """
+    )
+    Page<ProductMovementResponse> getProductMovement(Pageable pageable);
+
+
+    @Query(
+        value = """
+            SELECT new com.divyansu.inventory.dto.ProductMovementResponse(
+                p.id,
+                p.name,
+                p.sku,
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.IN
+                    THEN t.quantity ELSE 0 END
+                ), 0),
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.OUT
+                    THEN t.quantity ELSE 0 END
+                ), 0)
+            )
+            FROM InventoryTransaction t
+            JOIN t.product p
+            WHERE t.createdAt >= :startDate
+            GROUP BY p.id, p.name, p.sku
+            ORDER BY p.name ASC
+            """,
+        countQuery = """
+            SELECT COUNT(DISTINCT t.product.id)
+            FROM InventoryTransaction t
+            WHERE t.createdAt >= :startDate
+            """
+    )
+    Page<ProductMovementResponse> getProductMovementFromDate(
+        @Param("startDate") LocalDateTime startDate,
+        Pageable pageable
+    );
+
+
+    @Query(
+        value = """
+            SELECT new com.divyansu.inventory.dto.ProductMovementResponse(
+                p.id,
+                p.name,
+                p.sku,
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.IN
+                    THEN t.quantity ELSE 0 END
+                ), 0),
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.OUT
+                    THEN t.quantity ELSE 0 END
+                ), 0)
+            )
+            FROM InventoryTransaction t
+            JOIN t.product p
+            WHERE t.createdAt <= :endDate
+            GROUP BY p.id, p.name, p.sku
+            ORDER BY p.name ASC
+            """,
+        countQuery = """
+            SELECT COUNT(DISTINCT t.product.id)
+            FROM InventoryTransaction t
+            WHERE t.createdAt <= :endDate
+            """
+    )
+    Page<ProductMovementResponse> getProductMovementUntilDate(
+        @Param("endDate") LocalDateTime endDate,
+        Pageable pageable
+    );
+
+
+    @Query(
+        value = """
+            SELECT new com.divyansu.inventory.dto.ProductMovementResponse(
+                p.id,
+                p.name,
+                p.sku,
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.IN
+                    THEN t.quantity ELSE 0 END
+                ), 0),
+                COALESCE(SUM(
+                    CASE WHEN t.type = com.divyansu.inventory.entity.TransactionType.OUT
+                    THEN t.quantity ELSE 0 END
+                ), 0)
+            )
+            FROM InventoryTransaction t
+            JOIN t.product p
+            WHERE t.createdAt >= :startDate
+            AND t.createdAt <= :endDate
+            GROUP BY p.id, p.name, p.sku
+            ORDER BY p.name ASC
+            """,
+        countQuery = """
+            SELECT COUNT(DISTINCT t.product.id)
+            FROM InventoryTransaction t
+            WHERE t.createdAt >= :startDate
+            AND t.createdAt <= :endDate
+            """
+    )
+    Page<ProductMovementResponse> getProductMovementBetweenDates(
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate,
+        Pageable pageable
+    );
 }
